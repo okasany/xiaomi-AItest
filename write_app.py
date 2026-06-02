@@ -1,4 +1,8 @@
-// 笔记应用 - 主逻辑
+#!/usr/bin/env python3
+# Script to rewrite app.js with proper structure
+import os
+
+content = r"""// 笔记应用 - 主逻辑
 
 // ============================================================
 // 工具函数
@@ -777,3 +781,9 @@ var App = {
 document.addEventListener('DOMContentLoaded', function() {
     App.init();
 });
+"""
+
+with open('app.js', 'w', encoding='utf-8') as f:
+    f.write(content)
+
+print(f"Written {len(content)} chars to app.js")

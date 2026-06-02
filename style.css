@@ -24,6 +24,7 @@
     --radius: 10px;
     --radius-sm: 6px;
     --transition: 0.2s ease;
+    --sidebar-width: 320px;
 }
 
 [data-theme="dark"] {
@@ -112,14 +113,53 @@ body {
 .app-container { display: flex; height: 100vh; }
 
 .sidebar {
-    width: 320px;
-    min-width: 320px;
+    width: var(--sidebar-width);
+    min-width: 200px;
+    max-width: 600px;
     background: var(--sidebar-bg);
     color: var(--sidebar-text);
     display: flex;
     flex-direction: column;
-    border-right: 1px solid var(--sidebar-border);
+    border-right: none;
     transition: transform 0.3s ease;
+    flex-shrink: 0;
+}
+
+/* ---- Resize Handle ---- */
+.resize-handle {
+    width: 6px;
+    cursor: col-resize;
+    background: transparent;
+    position: relative;
+    flex-shrink: 0;
+    z-index: 10;
+    transition: background var(--transition);
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.resize-handle:hover,
+.resize-handle.active {
+    background: var(--primary);
+}
+
+.resize-handle-bar {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 4px;
+    height: 40px;
+    border-radius: 2px;
+    background: var(--sidebar-border);
+    transition: background var(--transition), height var(--transition);
+    pointer-events: none;
+}
+
+.resize-handle:hover .resize-handle-bar,
+.resize-handle.active .resize-handle-bar {
+    background: white;
+    height: 60px;
 }
 
 .sidebar-header { padding: 20px; border-bottom: 1px solid var(--sidebar-border); }
@@ -196,7 +236,7 @@ body {
 }
 
 .editor-area.drag-over::after {
-    content: "\1F4E5 \62D6\62FD\6587\4EF6\5230\6B64\5904\5BFC\5165";
+    content: "\1F4E5  Drag files here to import";
     position: absolute;
     inset: 20px;
     background: rgba(74, 144, 226, 0.15);
@@ -350,6 +390,7 @@ body {
 @media (max-width: 768px) {
     .mobile-menu-btn { display: block; }
     .dark-mode-toggle { top: 14px; right: 14px; }
+    .resize-handle { display: none; }
     .sidebar {
         position: fixed;
         left: 0;
@@ -375,7 +416,7 @@ body {
     .editor-meta { flex-wrap: wrap; gap: 8px; }
 }
 
-/* 标签页样式 */
+/* Tab styles */
 .sidebar-tabs {
     display: flex;
     gap: 4px;
@@ -415,7 +456,7 @@ body {
     display: block;
 }
 
-/* 书籍列表样式 */
+/* Book list styles */
 .book-list {
     flex: 1;
     overflow-y: auto;
@@ -489,7 +530,7 @@ body {
     background: rgba(231, 76, 60, 0.2);
 }
 
-/* 书籍阅读器样式 */
+/* Book reader styles */
 .book-reader {
     flex: 1;
     display: flex;
@@ -594,7 +635,7 @@ body {
     gap: 4px;
 }
 
-/* 书籍空状态 */
+/* Book empty state */
 .book-list-empty {
     text-align: center;
     color: var(--sidebar-muted);
@@ -602,7 +643,7 @@ body {
     font-size: 0.9rem;
 }
 
-/* 阅读器主题切换 */
+/* Reader theme styles */
 .reader-content.dark-theme {
     background: #1a1a2e;
     color: #e2e8f0;
@@ -617,17 +658,23 @@ body {
     border-radius: var(--radius);
 }
 
-/* 书籍导入进度 */
-.import-progress {
+/* Book import progress */
+.import-progress-overlay {
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    backdrop-filter: blur(4px);
+}
+
+.import-progress {
     background: var(--card-bg);
     padding: 32px;
     border-radius: var(--radius);
     box-shadow: var(--shadow-lg);
-    z-index: 2000;
     text-align: center;
     min-width: 300px;
 }

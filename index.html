@@ -3,93 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>笔记应用</title>
+    <title>Notes App</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- 移动端菜单按钮 -->
-    <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+    <!-- Mobile menu button -->
+    <button class="mobile-menu-btn" id="mobileMenuBtn">&#9776;</button>
 
-    <!-- 深色模式切换 -->
-    <button class="dark-mode-toggle" id="darkModeToggle" title="切换深色模式">🌙</button>
+    <!-- Dark mode toggle -->
+    <button class="dark-mode-toggle" id="darkModeToggle" title="Toggle dark mode">&#127769;</button>
 
     <div class="app-container">
-        <!-- 侧边栏 -->
+        <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <h1>📝 我的笔记</h1>
+                <h1>&#128221; My Notes</h1>
                 <div class="sidebar-actions">
-                    <button class="btn btn-primary btn-small" id="newNoteBtn">+ 新建</button>
-                    <button class="btn btn-secondary btn-small" id="exportAllBtn" title="导出全部笔记">📦 导出</button>
-                    <button class="btn btn-secondary btn-small" id="importAllBtn" title="导入笔记">📥 导入</button>
-                    <button class="btn btn-secondary btn-small" id="trashBtn" title="回收站">🗑️</button>
+                    <button class="btn btn-primary btn-small" id="newNoteBtn">+ New</button>
+                    <button class="btn btn-secondary btn-small" id="exportAllBtn" title="Export all notes">&#128230; Export</button>
+                    <button class="btn btn-secondary btn-small" id="importAllBtn" title="Import notes">&#128229; Import</button>
+                    <button class="btn btn-secondary btn-small" id="trashBtn" title="Trash">&#128465;</button>
                 </div>
                 <div class="sidebar-tabs">
-                    <button class="tab-btn active" data-tab="notes">📝 笔记</button>
-                    <button class="tab-btn" data-tab="books">📚 书籍</button>
+                    <button class="tab-btn active" data-tab="notes">&#128221; Notes</button>
+                    <button class="tab-btn" data-tab="books">&#128218; Books</button>
                 </div>
                 <div class="sidebar-info">
-                    <span id="noteCount">0 条笔记</span>
-                    <button class="btn btn-text btn-small" id="sortBtn" title="排序">↕ 排序</button>
+                    <span id="noteCount">0 notes</span>
+                    <button class="btn btn-text btn-small" id="sortBtn" title="Sort">&#8597; Sort</button>
                 </div>
             </div>
-            <div class="search-box" id="notesSearch">
-                <input type="text" id="searchInput" placeholder="🔍 搜索笔记标题或内容...">
+            <div class="search-box tab-search active" id="notesSearch" data-tab="notes">
+                <input type="text" id="searchInput" placeholder="&#128269; Search notes...">
             </div>
-            <div class="search-box" id="booksSearch" style="display:none;">
-                <input type="text" id="bookSearchInput" placeholder="🔍 搜索书籍...">
+            <div class="search-box tab-search" id="booksSearch" data-tab="books" style="display:none;">
+                <input type="text" id="bookSearchInput" placeholder="&#128269; Search books...">
             </div>
             <div class="note-list tab-content active" id="noteList" data-tab="notes"></div>
             <div class="book-list tab-content" id="bookList" data-tab="books" style="display:none;">
                 <div class="book-actions">
-                    <button class="btn btn-primary btn-small" id="importBookBtn">📖 导入书籍</button>
-                    <input type="file" id="bookFileInput" accept=".txt,.epub,.pdf,.mobi" style="display:none;">
+                    <button class="btn btn-primary btn-small" id="importBookBtn">&#128218; Import Book</button>
+                    <input type="file" id="bookFileInput" accept=".txt,.epub,.pdf,.mobi" style="display:none;" multiple>
                 </div>
                 <div id="bookItems"></div>
             </div>
         </aside>
 
-        <!-- 编辑器区域 -->
+        <!-- Resize handle -->
+        <div class="resize-handle" id="resizeHandle">
+            <div class="resize-handle-bar"></div>
+        </div>
+
+        <!-- Editor area -->
         <main class="editor-area" id="editorArea">
-            <!-- 空状态 -->
+            <!-- Empty state -->
             <div class="empty-state" id="emptyState">
-                <div class="empty-icon">📝</div>
-                <h2>欢迎使用笔记应用</h2>
-                <p>点击左侧「新建」按钮创建第一条笔记</p>
-                <p class="empty-hint">或拖拽 .txt / .md 文件到此处导入</p>
+                <div class="empty-icon">&#128221;</div>
+                <h2>Welcome to Notes App</h2>
+                <p>Click "+ New" on the left to create your first note</p>
+                <p class="empty-hint">Or drag and drop .txt / .md files here to import</p>
             </div>
 
-            <!-- 笔记编辑器 -->
+            <!-- Note editor -->
             <div class="editor" id="editor" style="display:none;">
                 <div class="editor-header">
-                    <input type="text" class="title-input" id="titleInput" placeholder="输入笔记标题...">
+                    <input type="text" class="title-input" id="titleInput" placeholder="Enter note title...">
                     <div class="editor-meta">
-                        <span id="readTime">阅读约 0 分钟</span>
-                        <span id="charCount">字数：0</span>
+                        <span id="readTime">Read time: 0 min</span>
+                        <span id="charCount">Chars: 0</span>
                     </div>
                     <div class="editor-toolbar">
-                        <button class="btn btn-text btn-small" id="previewBtn" title="切换Markdown预览">👁 预览</button>
-                        <button class="btn btn-text btn-small" id="exportBtn">📥 导出</button>
-                        <button class="btn btn-text btn-small" id="importBtn">📤 导入</button>
+                        <button class="btn btn-text btn-small" id="previewBtn" title="Toggle Markdown preview">&#128065; Preview</button>
+                        <button class="btn btn-text btn-small" id="exportBtn">&#128229; Export</button>
+                        <button class="btn btn-text btn-small" id="importBtn">&#128228; Import</button>
                         <input type="file" id="fileInput" accept=".txt,.md,.json" style="display:none;">
-                        <button class="btn btn-danger btn-small" id="deleteBtn">🗑 删除</button>
+                        <button class="btn btn-danger btn-small" id="deleteBtn">&#128465; Delete</button>
                     </div>
                 </div>
                 <div class="editor-body">
-                    <textarea id="contentArea" placeholder="开始写笔记..."></textarea>
+                    <textarea id="contentArea" placeholder="Start writing..."></textarea>
                     <div class="markdown-preview" id="markdownPreview" style="display:none;"></div>
                 </div>
             </div>
 
-            <!-- 书籍阅读器 -->
+            <!-- Book reader -->
             <div class="book-reader" id="bookReader" style="display:none;">
                 <div class="reader-header">
-                    <h2 id="bookTitle">书籍标题</h2>
+                    <h2 id="bookTitle">Book Title</h2>
                     <div class="reader-controls">
-                        <button class="btn btn-text btn-small" id="prevChapterBtn">◀ 上一章</button>
+                        <button class="btn btn-text btn-small" id="prevChapterBtn">&#9664; Prev</button>
                         <select id="chapterSelect" class="chapter-select"></select>
-                        <button class="btn btn-text btn-small" id="nextChapterBtn">下一章 ▶</button>
-                        <button class="btn btn-text btn-small" id="closeBookBtn">✕ 关闭</button>
+                        <button class="btn btn-text btn-small" id="nextChapterBtn">Next &#9654;</button>
+                        <button class="btn btn-text btn-small" id="closeBookBtn">&#10005; Close</button>
                     </div>
                 </div>
                 <div class="reader-body">
@@ -103,35 +108,47 @@
                     <div class="font-controls">
                         <button class="btn btn-text btn-small" id="fontDecrease">A-</button>
                         <button class="btn btn-text btn-small" id="fontIncrease">A+</button>
-                        <button class="btn btn-text btn-small" id="toggleTheme">🌙</button>
+                        <button class="btn btn-text btn-small" id="toggleReaderTheme">&#127769;</button>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- 回收站对话框 -->
+    <!-- Trash dialog -->
     <div class="dialog-overlay" id="trashDialog" style="display:none;">
         <div class="dialog">
-            <h3>🗑️ 回收站</h3>
+            <h3>&#128465; Trash</h3>
             <div class="trash-list" id="trashList">
-                <p class="trash-empty">回收站为空</p>
+                <p class="trash-empty">Trash is empty</p>
             </div>
             <div class="dialog-actions">
-                <button class="btn btn-danger btn-small" id="emptyTrashBtn">清空回收站</button>
-                <button class="btn btn-secondary btn-small" id="closeTrashBtn">关闭</button>
+                <button class="btn btn-danger btn-small" id="emptyTrashBtn">Empty Trash</button>
+                <button class="btn btn-secondary btn-small" id="closeTrashBtn">Close</button>
             </div>
         </div>
     </div>
 
-    <!-- 确认对话框 -->
+    <!-- Import progress overlay -->
+    <div class="import-progress-overlay" id="importProgressOverlay" style="display:none;">
+        <div class="import-progress">
+            <h3>&#128218; 导入中...</h3>
+            <p id="importProgressName">正在处理文件</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="importProgressFill" style="width: 0%"></div>
+            </div>
+            <div class="progress-text" id="importProgressText">0%</div>
+        </div>
+    </div>
+
+    <!-- Confirm dialog -->
     <div class="dialog-overlay" id="confirmDialog" style="display:none;">
         <div class="dialog">
-            <h3 id="confirmTitle">确认</h3>
+            <h3 id="confirmTitle">Confirm</h3>
             <p id="confirmMessage"></p>
             <div class="dialog-actions">
-                <button class="btn btn-danger" id="confirmYes">确定</button>
-                <button class="btn btn-secondary" id="confirmNo">取消</button>
+                <button class="btn btn-danger" id="confirmYes">OK</button>
+                <button class="btn btn-secondary" id="confirmNo">Cancel</button>
             </div>
         </div>
     </div>
