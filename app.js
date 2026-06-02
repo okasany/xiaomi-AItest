@@ -308,6 +308,16 @@ var App = {
             self.toggleSort();
         });
 
+        // 导出全部笔记
+        document.getElementById('exportAllBtn').addEventListener('click', function () {
+            var notes = NoteStorage.getNotes();
+            if (notes.length === 0) {
+                alert('没有可导出的笔记');
+                return;
+            }
+            FileManager.exportAll(notes);
+        });
+
         // 回收站
         document.getElementById('trashBtn').addEventListener('click', function () {
             self.openTrash();
