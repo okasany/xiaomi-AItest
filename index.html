@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>笔记应用</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 移动端菜单按钮 -->
+    <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+
+    <!-- 深色模式切换 -->
+    <button class="dark-mode-toggle" id="darkModeToggle" title="切换深色模式">🌙</button>
+
+    <div class="app-container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1>📝 我的笔记</h1>
+                <div class="sidebar-actions">
+                    <button class="btn btn-primary btn-small" id="newNoteBtn">+ 新建</button>
+                    <button class="btn btn-secondary btn-small" id="trashBtn" title="回收站">🗑️</button>
+                </div>
+                <div class="sidebar-info">
+                    <span id="noteCount">0 条笔记</span>
+                    <button class="btn btn-text btn-small" id="sortBtn" title="排序">↕ 排序</button>
+                </div>
+            </div>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="🔍 搜索笔记标题或内容...">
+            </div>
+            <div class="note-list" id="noteList"></div>
+        </aside>
+
+        <!-- 编辑器区域 -->
+        <main class="editor-area" id="editorArea">
+            <!-- 空状态 -->
+            <div class="empty-state" id="emptyState">
+                <div class="empty-icon">📝</div>
+                <h2>欢迎使用笔记应用</h2>
+                <p>点击左侧「新建」按钮创建第一条笔记</p>
+                <p class="empty-hint">或拖拽 .txt / .md 文件到此处导入</p>
+            </div>
+
+            <!-- 编辑器 -->
+            <div class="editor" id="editor" style="display:none;">
+                <div class="editor-header">
+                    <input type="text" class="title-input" id="titleInput" placeholder="输入笔记标题...">
+                    <div class="editor-meta">
+                        <span id="readTime">阅读约 0 分钟</span>
+                        <span id="charCount">字数：0</span>
+                    </div>
+                    <div class="editor-toolbar">
+                        <button class="btn btn-text btn-small" id="previewBtn" title="切换Markdown预览">👁 预览</button>
+                        <button class="btn btn-text btn-small" id="exportBtn">📥 导出</button>
+                        <button class="btn btn-text btn-small" id="importBtn">📤 导入</button>
+                        <input type="file" id="fileInput" accept=".txt,.md,.json" style="display:none;">
+                        <button class="btn btn-danger btn-small" id="deleteBtn">🗑 删除</button>
+                    </div>
+                </div>
+                <div class="editor-body">
+                    <textarea id="contentArea" placeholder="开始写笔记..."></textarea>
+                    <div class="markdown-preview" id="markdownPreview" style="display:none;"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 回收站对话框 -->
+    <div class="dialog-overlay" id="trashDialog" style="display:none;">
+        <div class="dialog">
+            <h3>🗑️ 回收站</h3>
+            <div class="trash-list" id="trashList">
+                <p class="trash-empty">回收站为空</p>
+            </div>
+            <div class="dialog-actions">
+                <button class="btn btn-danger btn-small" id="emptyTrashBtn">清空回收站</button>
+                <button class="btn btn-secondary btn-small" id="closeTrashBtn">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 确认对话框 -->
+    <div class="dialog-overlay" id="confirmDialog" style="display:none;">
+        <div class="dialog">
+            <h3 id="confirmTitle">确认</h3>
+            <p id="confirmMessage"></p>
+            <div class="dialog-actions">
+                <button class="btn btn-danger" id="confirmYes">确定</button>
+                <button class="btn btn-secondary" id="confirmNo">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
