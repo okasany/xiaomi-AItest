@@ -171,7 +171,6 @@ var FileManager = {
                         if (Array.isArray(data)) {
                             callback('json-import', data);
                             return;
-                        }
                     } catch (err) {
                         alert('JSON 文件格式错误');
                         return;
@@ -387,10 +386,6 @@ var App = {
                 e.preventDefault();
                 self.saveCurrentNote();
             }
-            // Escape 关闭对话框
-            if (e.key === 'Escape') {
-                document.getElementById('confirmDialog').style.display = 'none';
-                document.getElementById('trashDialog').style.display = 'none';
             }
         });
     },
@@ -728,3 +723,417 @@ var App = {
 document.addEventListener('DOMContentLoaded', function () {
     App.init();
 });
+
+};
+
+// ============================================================
+// Book Storage
+// ============================================================
+
+var BookStorage = {
+    BOOKS_KEY: 'notes_app_books',
+    BOOK_PROGRESS_KEY: 'notes_app_book_progress',
+
+    getBooks: function () {
+        try {
+            var data = localStorage.getItem(this.BOOKS_KEY);
+            return data ? JSON.parse(data) : [];
+        } catch (e) { return []; }
+    },
+
+    saveBooks: function (books) {
+        localStorage.setItem(this.BOOKS_KEY, JSON.stringify(books));
+    },
+
+    getProgress: function (bookId) {
+        try {
+            var data = localStorage.getItem(this.BOOK_PROGRESS_KEY);
+            var all = data ? JSON.parse(data) : {};
+            return all[bookId] || { chapter: 0, scroll: 0 };
+        } catch (e) { return { chapter: 0, scroll: 0 }; }
+    },
+
+    saveProgress: function (bookId, progress) {
+        try {
+            var data = localStorage.getItem(this.BOOK_PROGRESS_KEY);
+            var all = data ? JSON.parse(data) : {};
+            all[bookId] = progress;
+            localStorage.setItem(this.BOOK_PROGRESS_KEY, JSON.stringify(all));
+        } catch (e) {}
+    }
+            // Escape 关闭对话框和书籍
+            if (e.key === 'Escape') {
+                document.getElementById('confirmDialog').style.display = 'none';
+                document.getElementById('trashDialog').style.display = 'none';
+                if (self.currentBookId) self.closeBookReader();
+            }
+        });
+
+        // ---- 书籍相关事件 ----
+
+        // 标签页切换
+        document.querySelectorAll('.tab-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                self.switchTab(btn.getAttribute('data-tab'));
+            });
+        });
+
+        // 导入书籍按钮
+        document.getElementById('importBookBtn').addEventListener('click', function () {
+            self.importBook();
+        });
+
+        // 书籍文件选择
+        document.getElementById('bookFileInput').addEventListener('change', function (e) {
+            if (e.target.files.length > 0) {
+                self.handleBookFile(e.target.files[0]);
+            }
+            e.target.value = '';
+        });
+
+        // 书籍搜索
+        document.getElementById('bookSearchInput').addEventListener('input', function () {
+            self.renderBookList();
+        });
+
+        // 上一章
+        document.getElementById('prevChapterBtn').addEventListener('click', function () {
+            self.prevChapter();
+        });
+
+        // 下一章
+        document.getElementById('nextChapterBtn').addEventListener('click', function () {
+            self.nextChapter();
+        });
+
+        // 章节选择
+        document.getElementById('chapterSelect').addEventListener('change', function () {
+            self.goToChapter(parseInt(this.value));
+        });
+
+        // 关闭书籍
+        document.getElementById('closeBookBtn').addEventListener('click', function () {
+            self.closeBookReader();
+        });
+
+        // 字体大小
+        document.getElementById('fontDecrease').addEventListener('click', function () {
+            self.changeFontSize(-2);
+        });
+
+        document.getElementById('fontIncrease').addEventListener('click', function () {
+            self.changeFontSize(2);
+        });
+
+        // 阅读器主题
+        document.getElementById('toggleTheme').addEventListener('click', function () {
+            self.toggleReaderTheme();
+        });
+    },
+
+    // ---- 标签页切换 ----
+
+    switchTab: function (tab) {
+        document.querySelectorAll('.tab-btn').forEach(function (btn) {
+            btn.classList.toggle('active', btn.getAttribute('data-tab') === tab);
+        });
+        document.querySelectorAll('.tab-content').forEach(function (content) {
+            content.classList.toggle('active', content.getAttribute('data-tab') === tab);
+            content.style.display = content.getAttribute('data-tab') === tab ? '' : 'none';
+        });
+        if (tab === 'notes') {
+            document.getElementById('notesSearch').style.display = '';
+            document.getElementById('booksSearch').style.display = 'none';
+        } else {
+            document.getElementById('notesSearch').style.display = 'none';
+            document.getElementById('booksSearch').style.display = '';
+            this.renderBookList();
+        }
+    },
+
+    // ---- 书籍导入 ----
+
+    currentBookId: null,
+    currentBookFontSize: 16,
+    readerThemeIndex: 0,
+    readerThemes: ['default', 'sepia', 'dark'],
+
+    importBook: function () {
+        document.getElementById('bookFileInput').click();
+    },
+
+    handleBookFile: function (file) {
+        var self = this;
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            var content = e.target.result;
+            var title = file.name.replace(/\.(txt|md)$/i, '');
+            var chapters = self.splitIntoChapters(content);
+            var book = {
+                id: generateId(),
+                title: title,
+                chapters: chapters,
+                size: (file.size / 1024).toFixed(1) + ' KB',
+                createdAt: new Date().toISOString()
+            };
+            var books = BookStorage.getBooks();
+            books.push(book);
+            BookStorage.saveBooks(books);
+            self.renderBookList();
+            alert('书籍 "' + title + '" 导入成功！共 ' + chapters.length + ' 章');
+        };
+        reader.readAsText(file);
+    },
+
+    splitIntoChapters: function (text) {
+        var chapters = [];
+        // 尝试按常见章节标记分割
+        var patterns = [
+            /^(第[一二三四五六七八九十百千万零\d]+[章节回卷篇])/m,
+            /^(Chapter\s+\d+)/mi,
+            /^(CHAPTER\s+\d+)/m,
+            /^(\d+[\.\、]\s*.+)/m
+        ];
+
+        var matched = false;
+        for (var p = 0; p < patterns.length; p++) {
+            var parts = text.split(patterns[p]);
+            if (parts.length > 2) {
+                matched = true;
+                for (var i = 1; i < parts.length; i += 2) {
+                    var title = parts[i].trim();
+                    var content = (parts[i + 1] || '').trim();
+                    if (content.length > 0) {
+                        chapters.push({ title: title, content: content });
+                    }
+                }
+                break;
+            }
+        }
+
+        if (!matched || chapters.length === 0) {
+            // 按字数分章（每章约 3000 字）
+            var chunkSize = 3000;
+            var paragraphs = text.split(/\n\s*\n/);
+            var currentContent = '';
+            var chapterIndex = 1;
+            for (var j = 0; j < paragraphs.length; j++) {
+                currentContent += (currentContent ? '\n\n' : '') + paragraphs[j];
+                if (currentContent.length >= chunkSize) {
+                    chapters.push({ title: '第' + chapterIndex + '章', content: currentContent });
+                    currentContent = '';
+                    chapterIndex++;
+                }
+            }
+            if (currentContent.trim().length > 0) {
+                chapters.push({ title: '第' + chapterIndex + '章', content: currentContent });
+            }
+        }
+
+        if (chapters.length === 0) {
+            chapters.push({ title: '全文', content: text });
+        }
+        return chapters;
+    },
+
+    // ---- 书籍列表 ----
+
+    renderBookList: function () {
+        var books = BookStorage.getBooks();
+        var keyword = document.getElementById('bookSearchInput').value.trim().toLowerCase();
+        var container = document.getElementById('bookItems');
+
+        if (keyword) {
+            books = books.filter(function (b) {
+                return b.title.toLowerCase().indexOf(keyword) !== -1;
+            });
+        }
+
+        if (books.length === 0) {
+            container.innerHTML = '<div class="book-list-empty">' +
+                (keyword ? '没有找到匹配的书籍' : '暂无书籍，点击「导入书籍」添加') +
+                '</div>';
+            return;
+        }
+
+        var self = this;
+        var html = '';
+        books.forEach(function (book) {
+            var progress = BookStorage.getProgress(book.id);
+            var percent = book.chapters.length > 1
+                ? Math.round((progress.chapter / (book.chapters.length - 1)) * 100)
+                : 0;
+            html += '<div class="book-item" data-id="' + book.id + '">';
+            html += '<div class="book-item-title">' + escapeHtml(book.title) + '</div>';
+            html += '<div class="book-item-meta">';
+            html += '<span class="book-item-size">' + book.chapters.length + ' 章 · ' + book.size + ' · 已读 ' + percent + '%</span>';
+            html += '<button class="book-item-delete" data-id="' + book.id + '">删除</button>';
+            html += '</div></div>';
+        });
+        container.innerHTML = html;
+
+        // 绑定点击事件
+        container.querySelectorAll('.book-item').forEach(function (item) {
+            item.addEventListener('click', function (e) {
+                if (e.target.classList.contains('book-item-delete')) return;
+                self.openBookReader(item.getAttribute('data-id'));
+            });
+        });
+
+        // 绑定删除事件
+        container.querySelectorAll('.book-item-delete').forEach(function (btn) {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                self.deleteBook(btn.getAttribute('data-id'));
+            });
+        });
+    },
+
+    deleteBook: function (bookId) {
+        var self = this;
+        this.showConfirm('删除书籍', '确定要删除这本书吗？', function () {
+            var books = BookStorage.getBooks();
+            books = books.filter(function (b) { return b.id !== bookId; });
+            BookStorage.saveBooks(books);
+            if (self.currentBookId === bookId) self.closeBookReader();
+            self.renderBookList();
+        });
+    },
+
+    // ---- 书籍阅读器 ----
+
+    openBookReader: function (bookId) {
+        var books = BookStorage.getBooks();
+        var book = books.find(function (b) { return b.id === bookId; });
+        if (!book) return;
+
+        this.currentBookId = bookId;
+
+        // 隐藏其他区域
+        document.getElementById('emptyState').style.display = 'none';
+        document.getElementById('editor').style.display = 'none';
+        document.getElementById('bookReader').style.display = 'flex';
+
+        // 设置标题
+        document.getElementById('bookTitle').textContent = book.title;
+
+        // 填充章节选择器
+        var select = document.getElementById('chapterSelect');
+        select.innerHTML = '';
+        book.chapters.forEach(function (ch, i) {
+            var opt = document.createElement('option');
+            opt.value = i;
+            opt.textContent = ch.title;
+            select.appendChild(opt);
+        });
+
+        // 恢复进度
+        var progress = BookStorage.getProgress(bookId);
+        this.goToChapter(progress.chapter);
+
+        // 高亮选中
+        this.highlightSelectedBook();
+
+        // 移动端关闭侧边栏
+        if (window.innerWidth <= 768) {
+            document.getElementById('sidebar').classList.remove('open');
+        }
+    },
+
+    closeBookReader: function () {
+        this.saveBookProgress();
+        this.currentBookId = null;
+        document.getElementById('bookReader').style.display = 'none';
+        this.showEmptyState();
+        this.highlightSelectedBook();
+    },
+
+    goToChapter: function (index) {
+        if (!this.currentBookId) return;
+        var books = BookStorage.getBooks();
+        var book = books.find(function (b) { return b.id === this.currentBookId; }.bind(this));
+        if (!book || index < 0 || index >= book.chapters.length) return;
+
+        var chapter = book.chapters[index];
+        var content = chapter.content;
+
+        // 简单排版：段落之间加空行
+        var paragraphs = content.split(/\n\s*\n/);
+        var html = '';
+        paragraphs.forEach(function (p) {
+            p = p.trim();
+            if (p.length > 0) {
+                html += '<p>' + escapeHtml(p) + '</p>';
+            }
+        });
+        document.getElementById('bookContent').innerHTML = html;
+        document.getElementById('bookContent').style.fontSize = this.currentBookFontSize + 'px';
+
+        // 更新章节选择
+        document.getElementById('chapterSelect').value = index;
+
+        // 更新进度
+        var percent = book.chapters.length > 1
+            ? Math.round((index / (book.chapters.length - 1)) * 100)
+            : 100;
+        document.getElementById('progressFill').style.width = percent + '%';
+        document.getElementById('progressText').textContent = percent + '%';
+
+        // 滚动到顶部
+        document.querySelector('.reader-body').scrollTop = 0;
+
+        // 保存进度
+        BookStorage.saveProgress(this.currentBookId, { chapter: index, scroll: 0 });
+    },
+
+    prevChapter: function () {
+        var select = document.getElementById('chapterSelect');
+        var current = parseInt(select.value);
+        if (current > 0) {
+            this.goToChapter(current - 1);
+        }
+    },
+
+    nextChapter: function () {
+        var select = document.getElementById('chapterSelect');
+        var current = parseInt(select.value);
+        var books = BookStorage.getBooks();
+        var book = books.find(function (b) { return b.id === this.currentBookId; }.bind(this));
+        if (book && current < book.chapters.length - 1) {
+            this.goToChapter(current + 1);
+        }
+    },
+
+    saveBookProgress: function () {
+        if (!this.currentBookId) return;
+        var select = document.getElementById('chapterSelect');
+        var scrollTop = document.querySelector('.reader-body').scrollTop;
+        BookStorage.saveProgress(this.currentBookId, {
+            chapter: parseInt(select.value) || 0,
+            scroll: scrollTop
+        });
+    },
+
+    changeFontSize: function (delta) {
+        this.currentBookFontSize = Math.max(12, Math.min(28, this.currentBookFontSize + delta));
+        document.getElementById('bookContent').style.fontSize = this.currentBookFontSize + 'px';
+    },
+
+    toggleReaderTheme: function () {
+        this.readerThemeIndex = (this.readerThemeIndex + 1) % this.readerThemes.length;
+        var theme = this.readerThemes[this.readerThemeIndex];
+        var content = document.getElementById('bookContent');
+        content.className = 'reader-content';
+        if (theme !== 'default') {
+            content.classList.add(theme + '-theme');
+        }
+        var btn = document.getElementById('toggleTheme');
+        btn.textContent = theme === 'dark' ? '☀️' : theme === 'sepia' ? '🌙' : '🌙';
+    },
+
+    highlightSelectedBook: function () {
+        var self = this;
+        document.querySelectorAll('.book-item').forEach(function (item) {
+            item.classList.toggle('selected', item.getAttribute('data-id') === self.currentBookId);
+        document.getElementById('bookReader').style.display = 'none';
+        document.getElementById('bookReader').style.display = 'none';

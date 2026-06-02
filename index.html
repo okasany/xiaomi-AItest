@@ -21,17 +21,32 @@
                 <div class="sidebar-actions">
                     <button class="btn btn-primary btn-small" id="newNoteBtn">+ 新建</button>
                     <button class="btn btn-secondary btn-small" id="exportAllBtn" title="导出全部笔记">📦 导出</button>
+                    <button class="btn btn-secondary btn-small" id="importAllBtn" title="导入笔记">📥 导入</button>
                     <button class="btn btn-secondary btn-small" id="trashBtn" title="回收站">🗑️</button>
+                </div>
+                <div class="sidebar-tabs">
+                    <button class="tab-btn active" data-tab="notes">📝 笔记</button>
+                    <button class="tab-btn" data-tab="books">📚 书籍</button>
                 </div>
                 <div class="sidebar-info">
                     <span id="noteCount">0 条笔记</span>
                     <button class="btn btn-text btn-small" id="sortBtn" title="排序">↕ 排序</button>
                 </div>
             </div>
-            <div class="search-box">
+            <div class="search-box" id="notesSearch">
                 <input type="text" id="searchInput" placeholder="🔍 搜索笔记标题或内容...">
             </div>
-            <div class="note-list" id="noteList"></div>
+            <div class="search-box" id="booksSearch" style="display:none;">
+                <input type="text" id="bookSearchInput" placeholder="🔍 搜索书籍...">
+            </div>
+            <div class="note-list tab-content active" id="noteList" data-tab="notes"></div>
+            <div class="book-list tab-content" id="bookList" data-tab="books" style="display:none;">
+                <div class="book-actions">
+                    <button class="btn btn-primary btn-small" id="importBookBtn">📖 导入书籍</button>
+                    <input type="file" id="bookFileInput" accept=".txt,.epub,.pdf,.mobi" style="display:none;">
+                </div>
+                <div id="bookItems"></div>
+            </div>
         </aside>
 
         <!-- 编辑器区域 -->
@@ -44,7 +59,7 @@
                 <p class="empty-hint">或拖拽 .txt / .md 文件到此处导入</p>
             </div>
 
-            <!-- 编辑器 -->
+            <!-- 笔记编辑器 -->
             <div class="editor" id="editor" style="display:none;">
                 <div class="editor-header">
                     <input type="text" class="title-input" id="titleInput" placeholder="输入笔记标题...">
@@ -63,6 +78,33 @@
                 <div class="editor-body">
                     <textarea id="contentArea" placeholder="开始写笔记..."></textarea>
                     <div class="markdown-preview" id="markdownPreview" style="display:none;"></div>
+                </div>
+            </div>
+
+            <!-- 书籍阅读器 -->
+            <div class="book-reader" id="bookReader" style="display:none;">
+                <div class="reader-header">
+                    <h2 id="bookTitle">书籍标题</h2>
+                    <div class="reader-controls">
+                        <button class="btn btn-text btn-small" id="prevChapterBtn">◀ 上一章</button>
+                        <select id="chapterSelect" class="chapter-select"></select>
+                        <button class="btn btn-text btn-small" id="nextChapterBtn">下一章 ▶</button>
+                        <button class="btn btn-text btn-small" id="closeBookBtn">✕ 关闭</button>
+                    </div>
+                </div>
+                <div class="reader-body">
+                    <div class="reader-content" id="bookContent"></div>
+                </div>
+                <div class="reader-footer">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <span id="progressText">0%</span>
+                    <div class="font-controls">
+                        <button class="btn btn-text btn-small" id="fontDecrease">A-</button>
+                        <button class="btn btn-text btn-small" id="fontIncrease">A+</button>
+                        <button class="btn btn-text btn-small" id="toggleTheme">🌙</button>
+                    </div>
                 </div>
             </div>
         </main>
